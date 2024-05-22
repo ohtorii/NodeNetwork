@@ -5,6 +5,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Reactive.Linq;
+using System.Windows.Input;
 using ExampleShaderEditorApp.ViewModels;
 using NodeNetwork.Toolkit.ContextMenu;
 using ReactiveUI;
@@ -70,6 +72,12 @@ namespace ExampleShaderEditorApp.Views
                     pendingConnectionContextMenuView.IsOpen = true;
                     ctx.SetOutput(Unit.Default);
                 }).DisposeWith(d);
+                networkView.Events().KeyUp
+                    .Where(x => x.Key == Key.C)
+                    .Do(e => e.Handled = true)
+                    .Select(_ => Mouse.GetPosition(networkView))
+                    .InvokeCommand(ViewModel.NetworkViewModel.SurroundWithCommentNode)
+                    .DisposeWith(d);
             });
 
             nodeList.CVS.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
