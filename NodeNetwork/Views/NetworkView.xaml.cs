@@ -181,7 +181,8 @@ namespace NodeNetwork.Views
             InitializeComponent();
 	        if (DesignerProperties.GetIsInDesignMode(this)) { return; }
 
-			SetupNodes();
+            Panel.SetZIndex(this.connectionsControl, Define.ZIndex.Connection);
+            SetupNodes();
             SetupConnections();
             SetupCutLine();
             SetupViewportBinding();
@@ -501,10 +502,17 @@ namespace NodeNetwork.Views
             // here what caused this drag event. Only the Thumb around the node may cause drag events.
 
             bool isCorrectSource = WPFUtils.GetVisualAncestorNLevelsUp((DependencyObject)e.OriginalSource, 6) == nodesControl;
-            if (NodeMoveStart != null && isCorrectSource)
+            if (isCorrectSource)
             {
-                var args = new NodeMoveStartEventArgs(ViewModel.SelectedNodes.Items, e);
-                NodeMoveStart(sender, args);
+                foreach(NodeViewModel node in ViewModel.SelectedNodes.Items)
+                {
+                    node.NotifyDragPositionStarted(ThumbPosition.None);
+                }
+                if (NodeMoveStart != null)
+                {
+                    var args = new NodeMoveStartEventArgs(ViewModel.SelectedNodes.Items, e);
+                    NodeMoveStart(sender, args);
+                }
             }
         }
 
@@ -516,7 +524,7 @@ namespace NodeNetwork.Views
             {
                 foreach (NodeViewModel node in ViewModel.SelectedNodes.Items)
                 {
-                    node.Position = new Point(node.Position.X + e.HorizontalChange, node.Position.Y + e.VerticalChange);
+                    node.NotifyDragPositionDelta(ThumbPosition.None,new Vector(e.HorizontalChange,e.VerticalChange));
                 }
 
                 if (NodeMove != null)
@@ -531,10 +539,16 @@ namespace NodeNetwork.Views
         {
             // See OnNodeDragStart
             bool isCorrectSource = WPFUtils.GetVisualAncestorNLevelsUp((DependencyObject)e.OriginalSource, 6) == nodesControl;
-            if (NodeMoveEnd != null && isCorrectSource)
+            if(isCorrectSource)
             {
-                var args = new NodeMoveEndEventArgs(ViewModel.SelectedNodes.Items, e);
-                NodeMoveEnd(sender, args);
+                foreach (NodeViewModel node in ViewModel.SelectedNodes.Items)
+                {
+                    node.NotifyDragPositionCompleted(ThumbPosition.None);
+                }
+                if(NodeMoveEnd != null){
+                    var args = new NodeMoveEndEventArgs(ViewModel.SelectedNodes.Items, e);
+                    NodeMoveEnd(sender, args);
+                }
             }
         }
         #endregion
@@ -557,23 +571,11 @@ namespace NodeNetwork.Views
 
         public void CenterAndZoomView()
         {
-            if (ViewModel.Nodes.Count == 0)
+            var bounding = ViewModel.CalculateBoundingOfAllNode();
+            if (bounding.IsEmpty)
             {
                 return;
             }
-
-            var bounding = ViewModel.Nodes.Items.Select(node =>
-            {
-                var currentTopLeft = node.Position;
-                var currentBottomRight = Point.Add(node.Position, new Vector(node.Size.Width, node.Size.Height));
-                var nodeBounding = new Rect(currentTopLeft, currentBottomRight);
-                return nodeBounding;
-            }).Aggregate((r1, r2) =>
-            {
-                r1.Union(r2);
-                return r1;
-            });
-
             this.dragCanvas?.SetViewport(bounding);
         }
     }

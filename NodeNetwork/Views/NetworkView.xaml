@@ -60,7 +60,7 @@
                     <ItemsControl.ItemContainerStyle>
                         <Style TargetType="{x:Type ContentPresenter}">
                             <Style.Setters>
-                                <Setter Property="Panel.ZIndex" Value="{Binding Path=IsSelected, Converter={StaticResource BoolToZIndexConverter}}"/>
+                                <Setter Property="Panel.ZIndex" Value="{Binding Path=ZIndex}"/>
                             </Style.Setters>
                         </Style>
                     </ItemsControl.ItemContainerStyle>

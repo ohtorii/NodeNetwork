@@ -41,6 +41,7 @@ namespace ExampleCalculatorApp.ViewModels
             ListViewModel.AddNodeType(() => new ProductNodeViewModel());
             ListViewModel.AddNodeType(() => new DivisionNodeViewModel());
             ListViewModel.AddNodeType(() => new ConstantNodeViewModel());
+            ListViewModel.AddNodeType(() => new NodeCommenterViewModel());
             
             OutputNodeViewModel output = new OutputNodeViewModel();
             NetworkViewModel.Nodes.Add(output);

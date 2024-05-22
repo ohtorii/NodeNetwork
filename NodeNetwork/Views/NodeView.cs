@@ -27,7 +27,7 @@ using Splat;
 namespace NodeNetwork.Views
 {
     [TemplatePart(Name = nameof(CollapseButton), Type = typeof(ArrowToggleButton))]
-    [TemplatePart(Name = nameof(NameLabel), Type = typeof(TextBlock))]
+    [TemplatePart(Name = nameof(NameLabel), Type = typeof(TextBox))]
     [TemplatePart(Name = nameof(HeaderIcon), Type = typeof(Image))]
     [TemplatePart(Name = nameof(InputsList), Type = typeof(ItemsControl))]
     [TemplatePart(Name = nameof(OutputsList), Type = typeof(ItemsControl))]
@@ -35,6 +35,11 @@ namespace NodeNetwork.Views
     [TemplatePart(Name = nameof(ResizeVerticalThumb), Type = typeof(Thumb))]
     [TemplatePart(Name = nameof(ResizeHorizontalThumb), Type = typeof(Thumb))]
     [TemplatePart(Name = nameof(ResizeDiagonalThumb), Type = typeof(Thumb))]
+    [TemplatePart(Name = nameof(ResizeVerticalTopThumb), Type = typeof(Thumb))]
+    [TemplatePart(Name = nameof(ResizeHorizontalLeftThumb), Type = typeof(Thumb))]
+    [TemplatePart(Name = nameof(ResizeDiagonalBottomLeftThumb), Type = typeof(Thumb))]
+    [TemplatePart(Name = nameof(ResizeDiagonalTopLeftThumb), Type = typeof(Thumb))]
+    [TemplatePart(Name = nameof(ResizeDiagonalTopRightThumb), Type = typeof(Thumb))]
     [TemplateVisualState(Name = SelectedState, GroupName = SelectedVisualStatesGroup)]
     [TemplateVisualState(Name = UnselectedState, GroupName = SelectedVisualStatesGroup)]
     [TemplateVisualState(Name = CollapsedState, GroupName = CollapsedVisualStatesGroup)]
@@ -121,8 +126,8 @@ namespace NodeNetwork.Views
         }
 		#endregion
 
-		private ArrowToggleButton CollapseButton { get; set; }
-        private TextBlock NameLabel { get; set; }
+        private ArrowToggleButton CollapseButton { get; set; }
+        protected TextBox NameLabel { get; set; }
         private Image HeaderIcon { get; set; }
         private ItemsControl InputsList { get; set; }
         private ItemsControl OutputsList { get; set; }
@@ -130,6 +135,12 @@ namespace NodeNetwork.Views
         private Thumb ResizeVerticalThumb { get; set; }
         private Thumb ResizeHorizontalThumb { get; set; }
         private Thumb ResizeDiagonalThumb { get; set; }
+        private Thumb ResizeVerticalTopThumb { get; set; }
+        private Thumb ResizeHorizontalLeftThumb { get; set; }
+        private Thumb ResizeDiagonalBottomLeftThumb { get; set; }
+        private Thumb ResizeDiagonalTopLeftThumb { get; set; }
+        private Thumb ResizeDiagonalTopRightThumb { get; set; } 
+        protected readonly bool LimitedMinimumSize = true;
 
         public NodeView()
         {
@@ -143,7 +154,7 @@ namespace NodeNetwork.Views
         public override void OnApplyTemplate()
         {
             CollapseButton = GetTemplateChild(nameof(CollapseButton)) as ArrowToggleButton;
-            NameLabel = GetTemplateChild(nameof(NameLabel)) as TextBlock;
+            NameLabel = GetTemplateChild(nameof(NameLabel)) as TextBox;
             HeaderIcon = GetTemplateChild(nameof(HeaderIcon)) as Image;
             InputsList = GetTemplateChild(nameof(InputsList)) as ItemsControl;
             OutputsList = GetTemplateChild(nameof(OutputsList)) as ItemsControl;
@@ -151,27 +162,271 @@ namespace NodeNetwork.Views
             ResizeVerticalThumb = GetTemplateChild(nameof(ResizeVerticalThumb)) as Thumb;
             ResizeHorizontalThumb = GetTemplateChild(nameof(ResizeHorizontalThumb)) as Thumb;
             ResizeDiagonalThumb = GetTemplateChild(nameof(ResizeDiagonalThumb)) as Thumb;
+            ResizeVerticalTopThumb = GetTemplateChild(nameof(ResizeVerticalTopThumb)) as Thumb;
+            ResizeHorizontalLeftThumb = GetTemplateChild(nameof(ResizeHorizontalLeftThumb)) as Thumb;
+            ResizeDiagonalBottomLeftThumb = GetTemplateChild(nameof(ResizeDiagonalBottomLeftThumb)) as Thumb;
+            ResizeDiagonalTopLeftThumb = GetTemplateChild(nameof(ResizeDiagonalTopLeftThumb)) as Thumb;
+            ResizeDiagonalTopRightThumb = GetTemplateChild(nameof(ResizeDiagonalTopRightThumb)) as Thumb;
+            {
+                //
+                //ResizeVerticalThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.Top;
+                ResizeVerticalThumb.DragStarted += (sender, e) => 
+                { 
+                    OnThumDragStarted(); 
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
+                };
+                ResizeVerticalThumb.DragDelta += (sender, e) =>
+                {
+                    ApplyResize(DragDeltaEventToVector(e), false, true,false);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeVerticalThumb.DragCompleted += (sender, e) => ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+            }
 
-            ResizeVerticalThumb.DragDelta += (sender, e) => ApplyResize(e, false, true);
-            ResizeHorizontalThumb.DragDelta += (sender, e) => ApplyResize(e, true, false);
-            ResizeDiagonalThumb.DragDelta += (sender, e) => ApplyResize(e, true, true);
+            {
+                //
+                //ResizeHorizontalThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.Right;
+                ResizeHorizontalThumb.DragStarted += (sender, e) => 
+                { 
+                    OnThumDragStarted(); 
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
+                };
+                ResizeHorizontalThumb.DragDelta += (sender, e) =>
+                {
+                    ApplyResize(DragDeltaEventToVector(e), true, false, false);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeHorizontalThumb.DragCompleted += (sender, e) => ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+            }
+
+            {
+                //
+                //ResizeDiagonalThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.BottomRight;
+                ResizeDiagonalThumb.DragStarted += (sender, e) => 
+                { 
+                    OnThumDragStarted(); 
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
+                };
+                ResizeDiagonalThumb.DragDelta += (sender, e) =>
+                {
+                    ApplyResize(DragDeltaEventToVector(e), true, true,false);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalThumb.DragCompleted += (sender, e) => ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+            }
+
+            {
+                //
+                //ResizeVerticalTopThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.Top;
+                ResizeVerticalTopThumb.DragStarted += (sender, e) =>
+                {
+                    OnThumDragStarted();
+                    ViewModel.NotifyDragPositionStarted(thumbPos);
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeVerticalTopThumb.DragDelta += (sender, e) =>
+                {
+                    var delta = CalcDragDelta(e, false, true);
+                    ViewModel.NotifyDragPositionDelta(thumbPos, delta);
+                    ApplyResize(delta, false, true,true);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeVerticalTopThumb.DragCompleted += (sender, e) =>
+                {
+                    ViewModel.NotifyDragPositionCompleted(thumbPos);
+                    ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+            }
+
+            {
+                //
+                //ResizeHorizontalLeftThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.Left;
+                ResizeHorizontalLeftThumb.DragStarted += (sender, e) =>
+                {
+                    OnThumDragStarted();
+                    ViewModel.NotifyDragPositionStarted(thumbPos);
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeHorizontalLeftThumb.DragDelta += (sender, e) =>
+                {
+                    var delta = CalcDragDelta(e, true, false);
+                    ViewModel.NotifyDragPositionDelta(thumbPos, delta);
+                    ApplyResize(delta, true, false,true);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeHorizontalLeftThumb.DragCompleted += (sender, e) =>
+                {
+                    ViewModel.NotifyDragPositionCompleted(thumbPos);
+                    ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+            }
+
+            {
+                //
+                //ResizeDiagonalBottomLeftThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
+                ResizeDiagonalBottomLeftThumb.DragStarted += (sender, e) =>
+                {
+                    OnThumDragStarted();
+                    ViewModel.NotifyDragPositionStarted(thumbPos);
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalBottomLeftThumb.DragDelta += (sender, e) =>
+                {
+                    var delta = CalcDragDelta(e, true, false);
+                    ApplyResize(delta, true, false,true);
+                    ApplyResize(new Vector(e.HorizontalChange,e.VerticalChange), false, true,false);
+                    ViewModel.NotifyDragPositionDelta(thumbPos, delta);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalBottomLeftThumb.DragCompleted += (sender, e) =>
+                {
+                    ViewModel.NotifyDragPositionCompleted(thumbPos);
+                    ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                
+            }
+
+            {
+                //
+                //ResizeDiagonalTopLeftThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
+                ResizeDiagonalTopLeftThumb.DragStarted += (sender, e) =>
+                {
+                    OnThumDragStarted();
+                    ViewModel.NotifyDragPositionStarted(thumbPos);
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalTopLeftThumb.DragDelta += (sender, e) =>
+                {
+                    var delta = CalcDragDelta(e, true, true);
+                    ApplyResize(delta, true, true,true);
+                    ApplyResize(new Vector(e.HorizontalChange, e.VerticalChange), false, false, false);
+                    ViewModel.NotifyDragPositionDelta(thumbPos, delta);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalTopLeftThumb.DragCompleted += (sender, e) =>
+                {
+                    ViewModel.NotifyDragPositionCompleted(thumbPos);
+                    ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+            }
+
+            {
+                //
+                //ResizeDiagonalTopRightThumb
+                //
+                const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
+                ResizeDiagonalTopRightThumb.DragStarted += (sender, e) =>
+                {
+                    OnThumDragStarted();
+                    ViewModel.NotifyDragPositionStarted(thumbPos);
+                    ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalTopRightThumb.DragDelta += (sender, e) =>
+                {
+                    var delta = CalcDragDelta(e, false, true);
+                    ApplyResize(delta, false, true, true);
+                    ApplyResize(DragDeltaEventToVector(e), true, false, false);
+                    ViewModel.NotifyDragPositionDelta(thumbPos, delta);
+                    ViewModel.NotifyDragSizing(thumbPos, new Size(MinWidth, MinHeight));
+                };
+                ResizeDiagonalTopRightThumb.DragCompleted += (sender, e) =>
+                {
+                    ViewModel.NotifyDragPositionCompleted(thumbPos);
+                    ViewModel.NotifyDragSizingCompleted(thumbPos, new Size(MinWidth, MinHeight));
+                };
+            }
 
             VisualStateManager.GoToState(this, ExpandedState, false);
             VisualStateManager.GoToState(this, UnselectedState, false);
         }
-
-        private void ApplyResize(DragDeltaEventArgs e, bool horizontal, bool vertical)
+   
+        private void ApplyResize(Vector change, bool horizontal, bool vertical, bool isPositionMove)
         {
             if (horizontal)
             {
-                MinWidth = Math.Max(20, MinWidth + e.HorizontalChange);
+                double newWidth;
+                if (isPositionMove)
+                {
+                    newWidth = MinWidth - change.X;
+                } else
+                {
+                    newWidth = MinWidth + change.X;
+                }
+                MinWidth = Math.Max(firstActualMinSize.Value.Width, newWidth);
             }
             if (vertical)
             {
-                MinHeight = Math.Max(20, MinHeight + e.VerticalChange);
+                double newHeight;
+                if (isPositionMove)
+                {
+                    newHeight = MinHeight - change.Y;
+                } else
+                {
+                    newHeight = MinHeight + change.Y;
+                }
+                MinHeight = Math.Max(firstActualMinSize.Value.Height, newHeight);
             }
         }
+        private static Vector DragDeltaEventToVector(DragDeltaEventArgs e)
+        {
+            return new Vector(e.HorizontalChange,e.VerticalChange);
+        }
 
+        #region Top and left drag processing.
+        private Size? firstActualMinSize;
+        private void OnThumDragStarted()
+        {
+            if (firstActualMinSize==null)
+            {
+                firstActualMinSize = new Size(ActualWidth, ActualHeight);
+                MinWidth = ActualWidth;
+                MinHeight = ActualHeight;
+            }
+        }
+        private Vector CalcDragDelta(DragDeltaEventArgs e, bool horizontal, bool vertical)
+        {
+            double deltaX=0;
+            double deltaY=0;
+            if (horizontal)
+            {
+                var newWidth = MinWidth - e.HorizontalChange;
+                if (newWidth <= firstActualMinSize.Value.Width)
+                {
+                    deltaX = 0;
+                } else
+                {
+
+                    deltaX = e.HorizontalChange;
+                }
+            }
+            if (vertical)
+            {
+                var newHeight = MinHeight - e.VerticalChange;
+                if (newHeight <= firstActualMinSize.Value.Height)
+                {
+                    deltaY = 0;
+                } else
+                {
+                    deltaY = e.VerticalChange;
+                }
+            }
+            return new Vector(deltaX, deltaY);
+        }
+        #endregion
         private void SetupBindings()
         {
             this.WhenActivated(d =>

@@ -233,6 +233,10 @@ namespace NodeNetwork.ViewModels
         /// Runs the Validator function and stores the result in LatestValidation.
         /// </summary>
         public ReactiveCommand<Unit, NetworkValidationResult> UpdateValidation { get; }
+        /// <summary>
+        /// Create a CommentNode. If there is a selection node: Create a CommentNode with coordinates and sizes that cover the selection node (do not use the Point parameter). If there is no selection node: Create a CommentNode at the coordinates of the Point parameter, the size is the default value.
+        /// </summary>
+        public ReactiveCommand<Point, Unit> SurroundWithCommentNode { get; }
         #endregion
 
         public NetworkViewModel()
@@ -313,6 +317,28 @@ namespace NodeNetwork.ViewModels
             // Setup Validation observable
             var onValidationPropertyUpdate = this.WhenAnyValue(vm => vm.LatestValidation).Publish().RefCount();
             Validation = Observable.Defer(() => onValidationPropertyUpdate.StartWith(LatestValidation));
+
+            // Setup comment node
+            SurroundWithCommentNode = ReactiveCommand.Create<Point>((point) =>
+            {
+                var comment = new NodeCommenterViewModel 
+                {
+                    InitializationRequests=new NodeCommenterViewModel.InitialRequest
+                    {
+                        NameEditing=true 
+                    }
+                };
+                var rect = CalculateBoundingOfSelectedNode();
+                if (rect.IsEmpty)
+                {
+                    comment.InitializationRequests.Position = point;
+                } else
+                {
+                    comment.InitializationRequests.Position = rect.TopLeft;
+                    comment.InitializationRequests.Size = rect.Size;
+                }
+                Nodes.Add(comment);
+            });
 
             // When a connection or node changes, validate the network.
             // Zip is used because when a connection is removed, it will trigger a change in both the input and the output and we want to combine these.
@@ -422,6 +448,42 @@ namespace NodeNetwork.ViewModels
         public void FinishRectangleSelection()
         {
             SelectionRectangle.IsVisible = false;
+        }
+
+        private Rect CalculateBounding(IEnumerable<NodeViewModel> targetNodes) 
+        {
+            if (targetNodes.Any()==false)
+            {
+                return Rect.Empty;
+            }
+            var bounding = targetNodes.Select(node =>
+            {
+                var currentTopLeft = node.Position;
+                var currentBottomRight = Point.Add(node.Position, new Vector(node.Size.Width, node.Size.Height));
+                var nodeBounding = new Rect(currentTopLeft, currentBottomRight);
+                return nodeBounding;
+            }).Aggregate((r1, r2) =>
+            {
+                r1.Union(r2);
+                return r1;
+            });
+            return bounding;
+        }
+        /// <summary>
+        /// Calculate bounds for selection nodes
+        /// </summary>
+        /// <returns>If there is a select node, it returns bounding, otherwise it returns Rect.Empty</returns>
+        public Rect CalculateBoundingOfSelectedNode()
+        {
+            return CalculateBounding(SelectedNodes.Items);
+        }
+        /// <summary>
+        /// Calculate bounds for all nodes
+        /// </summary>
+        /// <returns>If there is a node, it returns bounding, otherwise it returns Rect.Empty</returns>
+        public Rect CalculateBoundingOfAllNode()
+        {
+            return CalculateBounding(Nodes.Items);
         }
     }
 }

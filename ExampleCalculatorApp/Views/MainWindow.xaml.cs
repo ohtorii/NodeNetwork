@@ -1,5 +1,9 @@
-﻿using System.Reactive.Disposables;
+﻿using System;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Windows;
+using System.Windows.Input;
 using ExampleCalculatorApp.ViewModels;
 using ReactiveUI;
 
@@ -35,6 +39,12 @@ namespace ExampleCalculatorApp.Views
                 this.OneWayBind(ViewModel, vm => vm.ListViewModel, v => v.nodeList.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.NetworkViewModel, v => v.viewHost.ViewModel).DisposeWith(d);
                 this.OneWayBind(ViewModel, vm => vm.ValueLabel, v => v.valueLabel.Content).DisposeWith(d);
+                this.viewHost.Events().KeyUp
+                    .Where(x => x.Key == Key.C)
+                    .Do(e => e.Handled = true)
+                    .Select(_ => Mouse.GetPosition(this.viewHost))
+                    .InvokeCommand(ViewModel.NetworkViewModel.SurroundWithCommentNode)
+                    .DisposeWith(d);
             });
         }
     }

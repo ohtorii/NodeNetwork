@@ -27,6 +27,20 @@ namespace NodeNetwork.ViewModels
         Vertical,
         HorizontalAndVertical
     }
+    public enum ThumbPosition
+    {
+        None=0,
+
+        Top = 1,
+        Right = 2,
+        Bottom = 4,
+        Left = 8,
+
+        TopRigth = Top | Right,
+        BottomRight = Bottom | Right,
+        BottomLeft = Bottom | Left,
+        TopRight = Top | Right,
+    }
 
     /// <summary>
     /// Viewmodel class for the nodes in the network
@@ -145,6 +159,21 @@ namespace NodeNetwork.ViewModels
         private bool _isSelected;
         #endregion
 
+        #region ZIndex
+        public int ZIndex
+        {
+            get => _ZIndex;
+            private set => this.RaiseAndSetIfChanged(ref _ZIndex, value);
+        }
+        private int _ZIndex;
+
+        public int BaseZIndex {
+            get => _BaseZIndex;
+            protected set => this.RaiseAndSetIfChanged(ref _BaseZIndex, value);
+        }
+        int _BaseZIndex = Define.ZIndex.Node;
+        #endregion
+        
         #region IsCollapsed
         /// <summary>
         /// If true, this node is currently collapsed.
@@ -181,13 +210,124 @@ namespace NodeNetwork.ViewModels
             set => this.RaiseAndSetIfChanged(ref _position, value);
         }
         private Point _position;
-		#endregion
+        #endregion
 
-		#region Size
-		/// <summary>
-		/// The rendered size of this node.
-		/// </summary>
-		public Size Size
+        #region DragEvent
+    
+        #region DragEvent.Position
+        //Started
+        public class DragPositionStartedEventArg : EventArgs
+        {
+            public DragPositionStartedEventArg(ThumbPosition position)
+            {
+                this.Position = position;
+            }
+            public ThumbPosition Position { get; }
+        }
+        public delegate void DragPositionStartedDelegate(NodeViewModel sender, DragPositionStartedEventArg e);
+        public event DragPositionStartedDelegate DragPositionStarted;
+        public void NotifyDragPositionStarted(ThumbPosition position)
+        {
+            DragPositionStarted?.Invoke(this, new DragPositionStartedEventArg(position));
+        }
+        //
+        public class DragPositionDeltaEventArg : EventArgs
+        {
+            public DragPositionDeltaEventArg(ThumbPosition position,Vector delta)
+            {
+                this.Position = position;
+                this.Delta = delta;
+            }
+            public ThumbPosition Position { get; }
+            public Vector Delta { get; }
+        }
+        public delegate void DragPositionDeltaDelegate(NodeViewModel sender, DragPositionDeltaEventArg e);
+        public event DragPositionDeltaDelegate DragPositionDelta;
+        public void NotifyDragPositionDelta(ThumbPosition position, Vector delta)
+        {
+            Position = new Point(Position.X + delta.X, Position.Y + delta.Y);
+            DragPositionDelta?.Invoke(this, new DragPositionDeltaEventArg(position,delta));
+        }
+
+        //Completed
+        public class DragPositionCompletedEventArg : EventArgs
+        {
+            public DragPositionCompletedEventArg(ThumbPosition position)
+            {
+                this.Position = position;
+            }
+            public ThumbPosition Position { get; }
+        }
+        public delegate void DragPositionCompletedDelegate(NodeViewModel sender, DragPositionCompletedEventArg e);
+        public event DragPositionCompletedDelegate DragPositionCompleted;
+        public void NotifyDragPositionCompleted(ThumbPosition position)
+        {
+            DragPositionCompleted?.Invoke(this, new DragPositionCompletedEventArg(position));
+        }
+        #endregion
+
+        #region DragEvent.Size
+        //Started
+        public class DragSizingStartedEventArg : EventArgs
+        {
+            public DragSizingStartedEventArg(ThumbPosition position, Size currentSize)
+            {
+                this.Position = position;
+                this.CurrentSize = currentSize;
+            }
+            public ThumbPosition Position { get; }
+            public Size CurrentSize { get; }
+        }
+        public delegate void DragSizingStartedDelegate(NodeViewModel sender, DragSizingStartedEventArg e);
+        public event DragSizingStartedDelegate DragSizeStarted;
+        public void NotifyDragSizingStarted(ThumbPosition position, Size currentSize)
+        {
+            DragSizeStarted?.Invoke(this, new DragSizingStartedEventArg(position,currentSize));
+        }
+
+        //Sizing
+        public class DragSizingEventArg : EventArgs
+        {
+            public DragSizingEventArg(ThumbPosition position,Size currentSize)
+            {
+                this.Position = position;
+                this.CurrentSize = currentSize;
+            }
+            public ThumbPosition Position { get; }
+            public Size CurrentSize { get; }
+        }
+        public delegate void DragSizingDelegate(NodeViewModel sender, DragSizingEventArg e);
+        public event DragSizingDelegate DragSizeDelta;
+        public void NotifyDragSizing(ThumbPosition position,Size currentSize)
+        {
+            DragSizeDelta?.Invoke(this, new DragSizingEventArg(position, currentSize));
+        }
+
+        //Completed
+        public class DragSizingCompletedEventArg : EventArgs
+        {
+            public DragSizingCompletedEventArg(ThumbPosition position,Size finalSize)
+            {
+                this.Position=position;
+                this.FinalSize = finalSize;
+            }
+            public ThumbPosition Position;
+            public Size FinalSize;
+        }
+        public delegate void DragSizingCompletedDelegate(NodeViewModel sender, DragSizingCompletedEventArg e);
+        public event DragSizingCompletedDelegate DragSizeCompleted;
+        public void NotifyDragSizingCompleted(ThumbPosition position, Size finalSize)
+        {
+            DragSizeCompleted?.Invoke(this, new DragSizingCompletedEventArg(position, finalSize));
+        }
+        #endregion
+        #endregion
+
+        #region Size
+        /// <summary>
+        /// The rendered size of this node.
+        /// </summary>
+        public Size Size
 		{
 			get => _size;
 			internal set => this.RaiseAndSetIfChanged(ref _size, value);
@@ -346,6 +486,16 @@ namespace NodeNetwork.ViewModels
                 .Subscribe();
 
             VisibleEndpointGroups = groups;
+
+            this.WhenAnyValue(vm => vm.IsSelected, vm=>vm.BaseZIndex)
+                .Subscribe(val => {
+                    if (val.Item1) {
+                        //See NodeNetwork.Utilities.WPF.BoolToZIndexConverter
+                        ZIndex = BaseZIndex + 1;
+                    } else {
+                        ZIndex = BaseZIndex;
+                    }
+                });
         }
     }
 }
