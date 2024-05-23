@@ -229,7 +229,11 @@ namespace NodeNetwork.ViewModels
             this.DragSizeCompleted -= OnDragSizeCompleted;
 
             compositeDisposable.Dispose();
-            foreach (var node in IncludedNodes)
+
+            //Use the copied array to modify the array during Foreach. If you don't do this, an exception will occur.
+            Holder[] copied = new Holder[IncludedNodes.Count];
+            IncludedNodes.CopyTo(copied);
+            foreach (var node in copied)
             {
                 RemoveIncludedNode(node.Node);
             }
