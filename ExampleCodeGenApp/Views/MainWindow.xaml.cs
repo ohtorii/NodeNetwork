@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using ExampleCodeGenApp.ViewModels;
 using ReactiveUI;
 
@@ -63,6 +64,13 @@ namespace ExampleCodeGenApp.Views
 				this.WhenAnyObservable(v => v.ViewModel.StartAutoLayoutLive.IsExecuting)
 					.Select((isRunning) => isRunning ? Visibility.Visible : Visibility.Collapsed)
 					.BindTo(this, v => v.stopAutoLayoutLiveButton.Visibility);
+
+            this.network.Events().KeyUp
+                  .Where(x => x.Key == Key.C)
+                  .Do(e => e.Handled = true)
+                  .Select(_ => Mouse.GetPosition(network))
+                  .InvokeCommand(network.ViewModel.SurroundWithCommentNode)
+                  .DisposeWith(d);
 			});
 
             this.ViewModel = new MainViewModel();
