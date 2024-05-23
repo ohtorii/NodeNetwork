@@ -8,9 +8,6 @@
 
     <Style TargetType="{x:Type views:NodeCommenterView}" BasedOn="{StaticResource {x:Type views:NodeView}}">
         <Setter Property="Background" Value="#80808080" />
-        <!--
-        <Setter Property="MinWidth" Value="128"/>
-        -->
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="ArrowSize" Value="0"/>
     </Style>
