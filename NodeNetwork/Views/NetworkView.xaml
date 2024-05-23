@@ -13,9 +13,6 @@
     <UserControl.InputBindings>
         <KeyBinding x:Name="deleteBinding" Key="Delete"/>
     </UserControl.InputBindings>
-    <UserControl.Resources>
-        <wpf:BoolToZIndexConverter x:Key="BoolToZIndexConverter"/>
-    </UserControl.Resources>
     <Grid Focusable="True" KeyboardNavigation.IsTabStop="False">
         <controls:DragCanvas Zoom="DragCanvas_OnZoom" x:Name="dragCanvas" MouseLeftButtonDown="OnClickCanvas" Background="#01000000">
             <Canvas Name="contentContainer" LayoutUpdated="ContentContainer_OnLayoutUpdated" Width="{Binding ActualWidth, ElementName=dragCanvas}" Height="{Binding ActualHeight, ElementName=dragCanvas}">
