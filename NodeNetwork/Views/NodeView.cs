@@ -140,7 +140,6 @@ namespace NodeNetwork.Views
         private Thumb ResizeDiagonalBottomLeftThumb { get; set; }
         private Thumb ResizeDiagonalTopLeftThumb { get; set; }
         private Thumb ResizeDiagonalTopRightThumb { get; set; } 
-        protected readonly bool LimitedMinimumSize = true;
 
         public NodeView()
         {
