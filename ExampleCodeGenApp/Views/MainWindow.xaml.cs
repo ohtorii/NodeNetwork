@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Windows;
@@ -65,13 +66,20 @@ namespace ExampleCodeGenApp.Views
 					.Select((isRunning) => isRunning ? Visibility.Visible : Visibility.Collapsed)
 					.BindTo(this, v => v.stopAutoLayoutLiveButton.Visibility);
 
-            this.network.Events().KeyUp
-                  .Where(x => x.Key == Key.C)
-                  .Do(e => e.Handled = true)
-                  .Select(_ => Mouse.GetPosition(network))
-                  .InvokeCommand(network.ViewModel.SurroundWithCommentNode)
-                  .DisposeWith(d);
-			});
+                //         this.WhenAnyValue(this, v => v.network);
+                this.network.Events().KeyUp
+                    .Where(x => x.Key == Key.C)
+                    .Do(e => { 
+                        e.Handled = true;
+                        var topLeftPosition = Mouse.GetPosition(network);
+                        ViewModel.Network.SurroundWithCommentNode
+                            .Execute(topLeftPosition)
+                            .Subscribe()
+                            .Dispose();
+                    })
+                    .Subscribe()
+                    .DisposeWith(d);
+            });
 
             this.ViewModel = new MainViewModel();
         }
