@@ -184,6 +184,13 @@ namespace NodeNetwork.Views
 	            this.BindList(ViewModel, vm => vm.VisibleOutputs, v => v.OutputsList.ItemsSource).DisposeWith(d);
 	            this.OneWayBind(ViewModel, vm => vm.VisibleEndpointGroups, v => v.EndpointGroupsList.ItemsSource).DisposeWith(d);
 
+                {
+                    this.Width=this.ViewModel.Size.Width;
+                }
+                if (this.ViewModel.Size.Height != 0.0)
+                {
+                    this.Height=this.ViewModel.Size.Height;
+                }
                 this.WhenAnyValue(v => v.ActualWidth, v => v.ActualHeight, (width, height) => new Size(width, height))
                     .BindTo(this, v => v.ViewModel.Size).DisposeWith(d);
 
