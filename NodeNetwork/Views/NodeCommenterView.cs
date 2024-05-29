@@ -1,5 +1,4 @@
 ﻿using NodeNetwork.ViewModels;
-using NodeNetwork.Views.Controls;
 using ReactiveUI;
 using System;
 using System.Linq;
@@ -92,33 +91,40 @@ namespace NodeNetwork.Views
             /*
               P = newPosition
 
-              P------------------+                  ^
-              | Comment          |                  |
-              +------------------+                  |
-              |                  | ^                |
-              |                  | | offset.Height  |
-              |                  | V                |
-              |   +----------+   |                  |
-              |   | Foo node |   |                  |
-              |   +----------+   |                  | newSize.Height
-              |   |          |   |                  |
-              |   |          |   |                  |
-              |   +----------+   |                  |
-              |                  | ^                |
-              |                  | | offset.Height  |
-              |                  | V                |
-              +------------------+                  V
-               <->            <->
-               offset.Width   offset.Width
+              P------------------+  ^
+              | Comment          |  |
+              +------------------+  |
+              |                  |  |
+              |                  |  |
+              |                  |  |
+              |   +----------+   |  |
+              |   | Foo node |   |  |
+              |   +----------+   |  | newSize.Height
+              |   |          |   |  |
+              |   |          |   |  |
+              |   +----------+   |  |
+              |                  |  |
+              |                  |  |
+              |                  |  |
+              +------------------+  V
 
               <----------------->
                 newSize.Width
             */
-            const double scale =1.3;
-            Size offset = new Size(this.NameLabel.ActualHeight/2, this.NameLabel.ActualHeight*scale);
-            newPosition = new Point(initialRequest.Position.X-offset.Width, initialRequest.Position.Y-offset.Height);
-            newSize = new Size(initialRequest.Size.Value.Width+offset.Width*2, initialRequest.Size.Value.Height+offset.Height*scale);
+            var client = CalcClientRect();
+       
+            Size offset = new Size(
+                client.Left,
+                client.Top + 4);
+            newPosition = new Point(
+                initialRequest.Position.X - offset.Width ,
+                initialRequest.Position.Y - offset.Height);
+            var bottomSpace = this.NameLabel.ActualHeight;
+            newSize= new Size(
+                initialRequest.Size.Value.Width + offset.Width * 2,
+                initialRequest.Size.Value.Height + offset.Height + bottomSpace);
         }
+     
         void ToggleLabelEdit(MouseButtonEventArgs e)
         {
             if (ViewModel?.IsSelected == false)

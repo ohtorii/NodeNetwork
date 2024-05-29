@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reactive.Disposables;
@@ -29,6 +30,8 @@ namespace NodeNetwork.Views
     [TemplatePart(Name = nameof(CollapseButton), Type = typeof(ArrowToggleButton))]
     [TemplatePart(Name = nameof(NameLabel), Type = typeof(TextBox))]
     [TemplatePart(Name = nameof(HeaderIcon), Type = typeof(Image))]
+    [TemplatePart(Name = nameof(HeaderBottomMargin),Type=typeof(Canvas))]
+    [TemplatePart(Name = nameof(BottomMargin),Type=typeof(Canvas))]
     [TemplatePart(Name = nameof(InputsList), Type = typeof(ItemsControl))]
     [TemplatePart(Name = nameof(OutputsList), Type = typeof(ItemsControl))]
     [TemplatePart(Name = nameof(EndpointGroupsList), Type = typeof(ItemsControl))]
@@ -129,6 +132,8 @@ namespace NodeNetwork.Views
         private ArrowToggleButton CollapseButton { get; set; }
         protected TextBox NameLabel { get; set; }
         private Image HeaderIcon { get; set; }
+        private Canvas HeaderBottomMargin { get; set; }
+        private Canvas BottomMargin { get; set; }
         private ItemsControl InputsList { get; set; }
         private ItemsControl OutputsList { get; set; }
         private ItemsControl EndpointGroupsList { get; set; }
@@ -155,6 +160,8 @@ namespace NodeNetwork.Views
             CollapseButton = GetTemplateChild(nameof(CollapseButton)) as ArrowToggleButton;
             NameLabel = GetTemplateChild(nameof(NameLabel)) as TextBox;
             HeaderIcon = GetTemplateChild(nameof(HeaderIcon)) as Image;
+            HeaderBottomMargin = GetTemplateChild(nameof(HeaderBottomMargin)) as Canvas;
+            BottomMargin = GetTemplateChild(nameof(BottomMargin)) as Canvas;
             InputsList = GetTemplateChild(nameof(InputsList)) as ItemsControl;
             OutputsList = GetTemplateChild(nameof(OutputsList)) as ItemsControl;
             EndpointGroupsList = GetTemplateChild(nameof(EndpointGroupsList)) as ItemsControl;
@@ -386,12 +393,13 @@ namespace NodeNetwork.Views
         }
 
         #region Top and left drag processing.
+        private Size? initialActualMinSize;
         private Size? firstActualMinSize;
         private void OnThumDragStarted()
         {
             if (firstActualMinSize==null)
             {
-                firstActualMinSize = new Size(ActualWidth, ActualHeight);
+                firstActualMinSize = initialActualMinSize; //new Size(ActualWidth, ActualHeight);
                 MinWidth = ActualWidth;
                 MinHeight = ActualHeight;
             }
@@ -440,7 +448,14 @@ namespace NodeNetwork.Views
 
                 this.WhenAnyValue(v => v.ActualWidth, v => v.ActualHeight, (width, height) => new Size(width, height))
                     .BindTo(this, v => v.ViewModel.Size).DisposeWith(d);
-
+#if true
+                this.WhenAnyValue(v => v.ActualWidth, v => v.ActualHeight, (width, height) => new Size(width, height))
+                    .Take(1)
+                    .Subscribe(sz => {
+                        Debug.Assert(initialActualMinSize == null);
+                        initialActualMinSize = sz;
+                    }) /*.DisposeWith(d)*/ ;
+#endif
                 this.OneWayBind(ViewModel, vm => vm.HeaderIcon, v => v.HeaderIcon.Source, img => img?.ToNative()).DisposeWith(d);
             });
         }
@@ -484,6 +499,11 @@ namespace NodeNetwork.Views
                     VisualStateManager.GoToState(this, isSelected ? SelectedState : UnselectedState, true);
                 }).DisposeWith(d);
             });
+        }
+        protected Rect CalcClientRect() {
+            var topLeft = HeaderBottomMargin.TranslatePoint(new Point(ResizeHorizontalLeftThumb.Width, HeaderBottomMargin.ActualHeight), this);
+            var bottomRight = ResizeDiagonalThumb.TranslatePoint(new Point(0,0),this); 
+            return new Rect(topLeft, bottomRight);
         }
     }
 }
