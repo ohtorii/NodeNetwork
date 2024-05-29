@@ -184,6 +184,7 @@ namespace NodeNetwork.Views
 	            this.BindList(ViewModel, vm => vm.VisibleOutputs, v => v.OutputsList.ItemsSource).DisposeWith(d);
 	            this.OneWayBind(ViewModel, vm => vm.VisibleEndpointGroups, v => v.EndpointGroupsList.ItemsSource).DisposeWith(d);
 
+                if (this.ViewModel.Size.Width != 0.0)
                 {
                     this.Width=this.ViewModel.Size.Width;
                 }
