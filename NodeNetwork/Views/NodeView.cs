@@ -180,7 +180,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.Top;
                 ResizeVerticalThumb.DragStarted += (sender, e) => 
                 { 
-                    OnThumDragStarted(); 
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
                 };
                 ResizeVerticalThumb.DragDelta += (sender, e) =>
@@ -198,7 +197,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.Right;
                 ResizeHorizontalThumb.DragStarted += (sender, e) => 
                 { 
-                    OnThumDragStarted(); 
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
                 };
                 ResizeHorizontalThumb.DragDelta += (sender, e) =>
@@ -216,7 +214,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomRight;
                 ResizeDiagonalThumb.DragStarted += (sender, e) => 
                 { 
-                    OnThumDragStarted(); 
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
                 };
                 ResizeDiagonalThumb.DragDelta += (sender, e) =>
@@ -234,7 +231,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.Top;
                 ResizeVerticalTopThumb.DragStarted += (sender, e) =>
                 {
-                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -259,7 +255,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.Left;
                 ResizeHorizontalLeftThumb.DragStarted += (sender, e) =>
                 {
-                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -284,7 +279,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
                 ResizeDiagonalBottomLeftThumb.DragStarted += (sender, e) =>
                 {
-                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -311,7 +305,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
                 ResizeDiagonalTopLeftThumb.DragStarted += (sender, e) =>
                 {
-                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -337,7 +330,6 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
                 ResizeDiagonalTopRightThumb.DragStarted += (sender, e) =>
                 {
-                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -372,7 +364,7 @@ namespace NodeNetwork.Views
                 {
                     newWidth = MinWidth + change.X;
                 }
-                MinWidth = Math.Max(firstActualMinSize.Value.Width, newWidth);
+                SetControlWidth(Math.Max(firstActualMinSize.Value.Width, newWidth));
             }
             if (vertical)
             {
@@ -384,7 +376,7 @@ namespace NodeNetwork.Views
                 {
                     newHeight = MinHeight + change.Y;
                 }
-                MinHeight = Math.Max(firstActualMinSize.Value.Height, newHeight);
+                SetControlHeight(Math.Max(firstActualMinSize.Value.Height, newHeight));
             }
         }
         private static Vector DragDeltaEventToVector(DragDeltaEventArgs e)
@@ -393,17 +385,8 @@ namespace NodeNetwork.Views
         }
 
         #region Top and left drag processing.
-        private Size? initialActualMinSize;
         private Size? firstActualMinSize;
-        private void OnThumDragStarted()
-        {
-            if (firstActualMinSize==null)
-            {
-                firstActualMinSize = initialActualMinSize; //new Size(ActualWidth, ActualHeight);
-                MinWidth = ActualWidth;
-                MinHeight = ActualHeight;
-            }
-        }
+     
         private Vector CalcDragDelta(DragDeltaEventArgs e, bool horizontal, bool vertical)
         {
             double deltaX=0;
@@ -452,8 +435,8 @@ namespace NodeNetwork.Views
                 this.WhenAnyValue(v => v.ActualWidth, v => v.ActualHeight, (width, height) => new Size(width, height))
                     .Take(1)
                     .Subscribe(sz => {
-                        Debug.Assert(initialActualMinSize == null);
-                        initialActualMinSize = sz;
+                        Debug.Assert(firstActualMinSize == null);
+                        firstActualMinSize = sz;
                     }) /*.DisposeWith(d)*/ ;
 #endif
                 this.OneWayBind(ViewModel, vm => vm.HeaderIcon, v => v.HeaderIcon.Source, img => img?.ToNative()).DisposeWith(d);
@@ -499,6 +482,21 @@ namespace NodeNetwork.Views
                     VisualStateManager.GoToState(this, isSelected ? SelectedState : UnselectedState, true);
                 }).DisposeWith(d);
             });
+        }
+        protected void SetControlSize(Size size)
+        {
+            SetControlWidth(size.Width);
+            SetControlHeight(size.Height);
+        }
+        protected void SetControlWidth(double width)
+        {
+            MinWidth = width;
+            MaxWidth = width;
+        }
+        protected void SetControlHeight(double height)
+        {
+            MinHeight = height;
+            MaxHeight = height;
         }
         protected Rect CalcClientRect() {
             var topLeft = HeaderBottomMargin.TranslatePoint(new Point(ResizeHorizontalLeftThumb.Width, HeaderBottomMargin.ActualHeight), this);

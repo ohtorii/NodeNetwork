@@ -45,8 +45,7 @@ namespace NodeNetwork.Views
                     nodeCommenterVM.Position = newPosition;
                     if (newSize != null)
                     {
-                        this.Width = newSize.Value.Width;
-                        this.Height = newSize.Value.Height;
+                        SetControlSize(newSize.Value);
                     }
                     if (req.NameEditing)
                     {
