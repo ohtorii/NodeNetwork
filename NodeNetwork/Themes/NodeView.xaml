@@ -144,7 +144,7 @@
                                     <Canvas x:Name="HeaderTopMargin" Width="auto" Height="10"/>
                                     <DockPanel>
                                         <Image x:Name="HeaderIcon" MaxWidth="{TemplateBinding ArrowSize}" MaxHeight="{TemplateBinding ArrowSize}" DockPanel.Dock="Left" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                                        <TextBox x:Name="NameLabel" TextWrapping="Wrap" Background="Transparent" Foreground="{TemplateBinding Foreground}" DockPanel.Dock="Left" VerticalAlignment="Center" TextAlignment="Center"
+                                        <TextBox x:Name="NameLabel" TextWrapping="Wrap" Background="Transparent" Foreground="{TemplateBinding Foreground}" DockPanel.Dock="Left" VerticalAlignment="Center" TextAlignment="Left"
                                             FontFamily="{TemplateBinding TitleFontFamily}" FontSize="{TemplateBinding TitleFontSize}" Margin="10,0,0,0" Width="{Binding Width, ElementName=Border}"
                                             BorderThickness="0" IsReadOnly="True" IsTabStop="False" IsHitTestVisible="False"/>
                                         <controls:ArrowToggleButton x:Name="CollapseButton" Width="{TemplateBinding ArrowSize}" Height="{TemplateBinding ArrowSize}" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,10,0"/>
