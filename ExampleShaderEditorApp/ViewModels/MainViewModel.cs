@@ -40,8 +40,9 @@ namespace ExampleShaderEditorApp.ViewModels
             new NodeTemplate(() => new Vec3MathNodeViewModel()),
             new NodeTemplate(() => new Vec3PackNodeViewModel()),
             new NodeTemplate(() => new Vec3UnpackNodeViewModel()),
-            new NodeTemplate(() => new TimeNodeViewModel())
-        };
+            new NodeTemplate(() => new TimeNodeViewModel()),
+            new NodeTemplate(() => new NodeCommenterViewModel()),
+    };
 
         public MainViewModel()
         {
