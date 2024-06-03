@@ -253,7 +253,6 @@ namespace NodeNetwork.ViewModels
                 .Take(1)
                 .Subscribe(value =>
                 {
-                    var debug = String.Format("{0} -> {1}",this.Name, addedNode.Name);
                     if (IsContains(addedNode))
                     {
                         UpdateIncludedNode(addedNode);
