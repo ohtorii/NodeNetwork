@@ -34,16 +34,22 @@ namespace NodeNetwork.Views
                     .MouseDoubleClick
                     .Subscribe(ToggleLabelEdit)
                     .DisposeWith(d);
+                firstActualMinSize = ViewModel.Size;
                 var nodeCommenterVM = this.ViewModel as NodeCommenterViewModel;
                 var req = nodeCommenterVM.InitializationRequests;
-                if (req != null)
+                if (req == null)
                 {
+                    SetControlSize(ViewModel.Size);
+                } else { 
                     Point newPosition;
                     Size? newSize;
                     CalcPositionAnsSize(out newPosition, out newSize, req);
                     
                     nodeCommenterVM.Position = newPosition;
-                    if (newSize != null)
+                    if (newSize == null)
+                    {
+                        SetControlSize(ViewModel.Size);
+                    } else
                     {
                         SetControlSize(newSize.Value);
                     }

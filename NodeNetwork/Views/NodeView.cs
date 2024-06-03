@@ -179,7 +179,8 @@ namespace NodeNetwork.Views
                 //
                 const ThumbPosition thumbPos = ThumbPosition.Top;
                 ResizeVerticalThumb.DragStarted += (sender, e) => 
-                { 
+                {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
                 };
                 ResizeVerticalThumb.DragDelta += (sender, e) =>
@@ -196,7 +197,8 @@ namespace NodeNetwork.Views
                 //
                 const ThumbPosition thumbPos = ThumbPosition.Right;
                 ResizeHorizontalThumb.DragStarted += (sender, e) => 
-                { 
+                {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
                 };
                 ResizeHorizontalThumb.DragDelta += (sender, e) =>
@@ -213,7 +215,8 @@ namespace NodeNetwork.Views
                 //
                 const ThumbPosition thumbPos = ThumbPosition.BottomRight;
                 ResizeDiagonalThumb.DragStarted += (sender, e) => 
-                { 
+                {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight)); 
                 };
                 ResizeDiagonalThumb.DragDelta += (sender, e) =>
@@ -231,6 +234,7 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.Top;
                 ResizeVerticalTopThumb.DragStarted += (sender, e) =>
                 {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -255,6 +259,7 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.Left;
                 ResizeHorizontalLeftThumb.DragStarted += (sender, e) =>
                 {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -279,6 +284,7 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
                 ResizeDiagonalBottomLeftThumb.DragStarted += (sender, e) =>
                 {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -305,6 +311,7 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
                 ResizeDiagonalTopLeftThumb.DragStarted += (sender, e) =>
                 {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -330,6 +337,7 @@ namespace NodeNetwork.Views
                 const ThumbPosition thumbPos = ThumbPosition.BottomLeft;
                 ResizeDiagonalTopRightThumb.DragStarted += (sender, e) =>
                 {
+                    OnThumDragStarted();
                     ViewModel.NotifyDragPositionStarted(thumbPos);
                     ViewModel.NotifyDragSizingStarted(thumbPos, new Size(MinWidth, MinHeight));
                 };
@@ -385,8 +393,14 @@ namespace NodeNetwork.Views
         }
 
         #region Top and left drag processing.
-        private Size? firstActualMinSize;
-     
+        protected Size? firstActualMinSize;
+        void OnThumDragStarted()
+        {
+            if (firstActualMinSize == null)
+            {
+                firstActualMinSize=new Size(ActualWidth,ActualHeight);
+            }
+        }
         private Vector CalcDragDelta(DragDeltaEventArgs e, bool horizontal, bool vertical)
         {
             double deltaX=0;
@@ -431,18 +445,9 @@ namespace NodeNetwork.Views
 
                 this.WhenAnyValue(v => v.ActualWidth, v => v.ActualHeight, (width, height) => new Size(width, height))
                     .BindTo(this, v => v.ViewModel.Size).DisposeWith(d);
-#if true
-                this.WhenAnyValue(v => v.ActualWidth, v => v.ActualHeight, (width, height) => new Size(width, height))
-                    .Take(1)
-                    .Subscribe(sz => {
-                        Debug.Assert(firstActualMinSize == null);
-                        firstActualMinSize = sz;
-                    }) /*.DisposeWith(d)*/ ;
-#endif
                 this.OneWayBind(ViewModel, vm => vm.HeaderIcon, v => v.HeaderIcon.Source, img => img?.ToNative()).DisposeWith(d);
             });
         }
-
         private void SetupEvents()
         {
             this.MouseLeftButtonDown += (sender, args) =>
