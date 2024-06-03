@@ -35,6 +35,8 @@ namespace NodeNetwork.Views
                     .Subscribe(ToggleLabelEdit)
                     .DisposeWith(d);
                 firstActualMinSize = ViewModel.Size;
+                ViewModel.Size = new Size (170, ViewModel.Size.Height);
+
                 var nodeCommenterVM = this.ViewModel as NodeCommenterViewModel;
                 var req = nodeCommenterVM.InitializationRequests;
                 if (req == null)
