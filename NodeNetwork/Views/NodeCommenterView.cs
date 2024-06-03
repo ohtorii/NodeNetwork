@@ -35,6 +35,7 @@ namespace NodeNetwork.Views
                     .Subscribe(ToggleLabelEdit)
                     .DisposeWith(d);
                 firstActualMinSize = ViewModel.Size;
+                //The width of the TextBox in which the string will fit (it would otherwise be undesirable to put a fixed value)
                 ViewModel.Size = new Size (170, ViewModel.Size.Height);
 
                 var nodeCommenterVM = this.ViewModel as NodeCommenterViewModel;
