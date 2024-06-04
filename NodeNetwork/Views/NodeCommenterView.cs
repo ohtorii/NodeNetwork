@@ -139,7 +139,7 @@ namespace NodeNetwork.Views
             {
                 return;
             }
-            if (!GetBoundingBox(NameLabel, this).Contains(e.GetPosition(this)))
+            if (!GetBoundingBox(HeaderPanel, this).Contains(e.GetPosition(this)))
             {
                 return ;
             }

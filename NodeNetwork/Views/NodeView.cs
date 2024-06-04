@@ -28,6 +28,7 @@ using Splat;
 namespace NodeNetwork.Views
 {
     [TemplatePart(Name = nameof(CollapseButton), Type = typeof(ArrowToggleButton))]
+    [TemplatePart(Name = nameof(HeaderPanel), Type = typeof(DockPanel))]
     [TemplatePart(Name = nameof(NameLabel), Type = typeof(TextBox))]
     [TemplatePart(Name = nameof(HeaderIcon), Type = typeof(Image))]
     [TemplatePart(Name = nameof(HeaderBottomMargin),Type=typeof(Canvas))]
@@ -130,6 +131,7 @@ namespace NodeNetwork.Views
 		#endregion
 
         private ArrowToggleButton CollapseButton { get; set; }
+        protected DockPanel HeaderPanel { get; set; }
         protected TextBox NameLabel { get; set; }
         private Image HeaderIcon { get; set; }
         private Canvas HeaderBottomMargin { get; set; }
@@ -158,6 +160,7 @@ namespace NodeNetwork.Views
         public override void OnApplyTemplate()
         {
             CollapseButton = GetTemplateChild(nameof(CollapseButton)) as ArrowToggleButton;
+            HeaderPanel = GetTemplateChild(nameof(HeaderPanel)) as DockPanel;
             NameLabel = GetTemplateChild(nameof(NameLabel)) as TextBox;
             HeaderIcon = GetTemplateChild(nameof(HeaderIcon)) as Image;
             HeaderBottomMargin = GetTemplateChild(nameof(HeaderBottomMargin)) as Canvas;
